@@ -253,7 +253,7 @@
             transform: translateY(-10px);
             border-color: var(--orange);
         }
-ç
+
         .service-icon {
             font-size: 2.5rem;
             margin-bottom: 20px;
@@ -553,6 +553,7 @@
             <li><a href="#servicios">Servicios</a></li>
             <li><a href="#proyectos">Proyectos</a></li>
             <li><a href="#opiniones">Opiniones</a></li>
+            <li><a href= #clientes">Clientes</a></li>
         </ul>
 
         <a href="#contacto" class="contact-button">Solicitar presupuesto</a>   
@@ -846,11 +847,15 @@
 
 
 
-            <form action="https://formsubmit.co/solucionsidisseny140@gmail.com" method="POST">
-                <input type="text" name="nombre" placeholder="Tu nombre" required>
-                <input type="email" name="email" placeholder="Tu email" required>
-                <input type="tel" name="telefono" placeholder="Tu teléfono">
-                <textarea name="mensaje" placeholder="Cuéntanos tu proyecto" required></textarea>
+            <form id=contactform" action=https://formsubmit.co/solucionsidisseny140@gmail.com" method="POST">
+             
+                <input type="text" id="nombre" placeholder="Tu nombre" required>
+             
+                <input type="email" id="email" placeholder="Tu email" required>
+             
+                <input type="tel" id="telefono" placeholder="Tu teléfono">
+             
+                <textarea id="mensaje" name="mensaje" placeholder="Cuéntanos tu proyecto" required></textarea>
 
                 <button type="submit" class="btn-primary">
                     Enviar solicitud por correo
