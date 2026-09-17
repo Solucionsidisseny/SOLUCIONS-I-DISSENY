@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mi Reforma | Solucions i Disseny</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        header {
+            background: #1b1b1b;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header span {
+            color: #f28c00;
+        }
+
+        .logout {
+            background: transparent;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 9px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .logout:hover {
+            border-color: #f28c00;
+            color: #f28c00;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .bienvenida {
+            margin-bottom: 30px;
+        }
+
+        .bienvenida h2 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .bienvenida p {
+            color: #aaa;
+        }
+
+        .proyecto {
+            background: #1c1c1c;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+
+        .progreso-numero {
+            font-size: 42px;
+            font-weight: bold;
+            color: #f28c00;
+        }
+
+        .barra {
+            width: 100%;
+            height: 18px;
+            background: #333;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 15px 0 30px;
+        }
+
+        .barra-progreso {
+            height: 100%;
+            width: 0%;
+            background: #f28c00;
+            transition: width .5s;
+        }
+
+        .fase {
+            padding: 15px;
+            margin: 10px 0;
+            background: #111;
+            border-radius: 8px;
+            border-left: 4px solid #555;
+        }
+
+        .fase.activa {
+            border-left-color: #f28c00;
+        }
+
+        .fase strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .fase small {
+            color: #aaa;
+        }
+
+        #mensaje {
+            color: #aaa;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <h1>
+        SOLUCIONS <span>I</span> DISSENY
+    </h1>
+
+    <button class="logout" id="logout">
+        Cerrar sesión
+    </button>
+
+</header>
+
+<main>
+
+    <div class="bienvenida">
+
+        <h2>
+            Mi reforma
+        </h2>
+
+        <p id="clienteEmail">
+            Cargando...
+        </p>
+
+    </div>
+
+    <div class="proyecto">
+
+        <h2 id="nombreObra">
+            Cargando reforma...
+        </h2>
+
+        <p>
+            Progreso de la obra
+        </p>
+
+        <div class="progreso-numero">
+            <span id="progreso">0</span>%
+        </div>
+
+        <div class="barra">
+
+            <div
+                class="barra-progreso"
+                id="barraProgreso">
+            </div>
+
+        </div>
+
+        <h3>
+            Estado de la reforma
+        </h3>
+
+        <p id="estado">
+            Cargando...
+        </p>
+
+        <div id="fases">
+
+        </div>
+
+        <div id="mensaje">
+
+        </div>
+
+        <hr style="margin: 30px 0; border-color: #333;">
+
+        <h3>Fotos de la reforma</h3>
+
+        <div id="fotosReforma">
+    Cargando fotos...
+        </div> 
+
+       </div>
+
+       <div style="margin-top: 50px;">
+
+    <hr style="margin: 40px 0; border-color: #333;">
+
+    <h3 style="margin-bottom: 20px;">
+        Historial de la reforma
+    </h3>
+
+    <div id="historialReforma">
+        Cargando historial...
+    </div>
+
+</div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase.js"></script>
+
+<script>
+    async function cargarCliente() {
+
+    // 1. Comprobar que hay un usuario conectado
+    const {
+        data: { user },
+        error: userError
+    } = await supabaseClient.auth.getUser();
+
+    if (userError || !user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    // 2. Mostrar email del cliente
+    document.getElementById("clienteEmail").textContent = user.email;
+
+    // 3. Buscar la reforma perteneciente a ESTE usuario
+    const {
+        data: reforma,
+        error: reformaError
+    } = await supabaseClient
+        .from("reformas")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+    // 4. Comprobar errores
+    if (reformaError) {
+
+        console.error("Error al cargar la reforma:", reformaError);
+
+        document.getElementById("mensaje").textContent =
+            "No se ha podido cargar la información de la reforma.";
+
+        return;
+    }
+
+    // 5. Si el usuario no tiene ninguna reforma
+    if (!reforma) {
+
+        document.getElementById("nombreObra").textContent =
+            "No tienes ninguna reforma asignada.";
+
+        document.getElementById("mensaje").textContent =
+            "Todavía no hay una reforma asociada a tu cuenta.";
+
+        return;
+    }
+   // 6. Mostrar datos de la reforma
+       document.getElementById("nombreObra").textContent =
+       reforma.nombre_obra;
+
+       document.getElementById("progreso").textContent =
+       reforma.progreso;
+
+       document.getElementById("barraProgreso").style.width =
+       reforma.progreso + "%";
+
+       document.getElementById("estado").textContent =
+       reforma.estado;
+
+       document.getElementById("mensaje").textContent =
+       reforma.mensaje;
+
+       console.log("Reforma encontrada:", reforma);  
+       cargarFotos(user.id);
+       cargarHistorial(user.id);
+      } 
+
+
+// CERRAR SESIÓN
+async function cerrarSesion() {
+
+    await supabaseClient.auth.signOut();
+
+    window.location.href = "login.html";
+}
+
+
+// Botón cerrar sesión
+document
+    .getElementById("logout")
+    .addEventListener("click", cerrarSesion);
+
+    async function cargarFotos(userId) {
+
+    const contenedor = document.getElementById("fotosReforma");
+
+    const { data: archivos, error } = await supabaseClient
+        .storage
+        .from("fotos-reformas")
+        .list(userId);
+
+    if (error) {
+        console.error("Error al cargar las fotos:", error);
+        contenedor.textContent = "No se han podido cargar las fotos.";
+        return;
+    }
+
+    if (!archivos || archivos.length === 0) {
+        contenedor.textContent = "Todavía no hay fotos de la reforma.";
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    archivos.forEach(archivo => {
+
+        const { data } = supabaseClient
+            .storage
+            .from("fotos-reformas")
+            .getPublicUrl(userId + "/" + archivo.name);
+
+        const imagen = document.createElement("img");
+
+        imagen.src = data.publicUrl;
+        imagen.style.width = "100%";
+        imagen.style.maxWidth = "500px";
+        imagen.style.marginBottom = "20px";
+        imagen.style.borderRadius = "10px";
+        imagen.style.display = "block";
+
+        contenedor.appendChild(imagen);
+    });
+}
+
+async function cargarHistorial(usuarioId) {
+
+    const contenedor = document.getElementById("historialReforma");
+
+    const { data: historial, error } = await supabaseClient
+        .from("historial_reformas")
+        .select("*")
+        .eq("usuario_id", usuarioId)
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Error al cargar historial:", error);
+        contenedor.textContent = "No se ha podido cargar el historial.";
+        return;
+    }
+
+    if (!historial || historial.length === 0) {
+        contenedor.textContent = "Todavía no hay cambios registrados.";
+        return;
+    }
+
+    contenedor.innerHTML = "";
+
+    historial.forEach(registro => {
+
+        const elemento = document.createElement("div");
+
+        elemento.style.marginBottom = "18px";
+        elemento.style.padding = "22px";
+        elemento.style.border = "1px solid #333";
+        elemento.style.borderRadius = "14px";
+        elemento.style.background = "#161616";
+
+        elemento.innerHTML = `
+            <strong>${registro.nombre_obra}</strong>
+            <p>Progreso: ${registro.progreso}%</p>
+            <p>Estado: ${registro.estado}</p>
+            <p>${registro.mensaje}</p>
+            <small>
+                ${new Date(registro.created_at).toLocaleString("es-ES")}
+            </small>
+        `;
+
+        contenedor.appendChild(elemento);
+    });
+}
+// Cargar datos al abrir el dashboard
+cargarCliente();
+
+</script>
+    
+
+
+</body>
+
+</html>

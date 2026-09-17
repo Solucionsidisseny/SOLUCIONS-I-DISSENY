@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Crear cuenta</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: rgb(250, 247, 245);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            width: 90%;
+            max-width: 400px;
+            background: #1c1c1c;
+            padding: 30px;
+            border-radius: 14px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 8px;
+            border: none;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #ff9800;
+            color: #000;
+            font-weight: bold;
+        }
+
+        #mensaje {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+
+        <h1>Crear cuenta</h1>
+
+        <form id="registroForm">
+
+            <label for="email">
+                Correo electrónico
+            </label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="tu@email.com"
+                required
+            >
+
+            <label for="password">
+                Contraseña
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Tu contraseña"
+                required
+            >
+
+            <button type="submit">
+                CREAR CUENTA
+            </button>
+
+        </form>
+
+        <div id="mensaje"></div>
+
+        <p style="margin-top: 20px; text-align: center;">
+            <a href="login.html">← Volver al inicio de sesión</a>
+        </p>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <script src="js/supabase.js"></script>
+
+    <script>
+
+const formulario = document.getElementById("registroForm");
+const mensaje = document.getElementById("mensaje");
+
+formulario.addEventListener("submit", async function(event) {
+
+    event.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    mensaje.textContent = "Creando cuenta...";
+
+    const { data, error } = await supabaseClient.auth.signUp({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        console.error(error);
+        mensaje.textContent = "Error: " + error.message;
+        return;
+    }
+
+    mensaje.textContent =
+        "Cuenta creada correctamente. Ya puedes iniciar sesión.";
+
+});
+
+</script>
+
+</body>
+</html>

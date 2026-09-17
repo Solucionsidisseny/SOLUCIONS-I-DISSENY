@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administrador | Solucions i Disseny</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: white;
+        }
+
+        header {
+            background: #1b1b1b;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header span {
+            color: #f28c00;
+        }
+
+        button {
+            background: transparent;
+            color: white;
+            border: 1px solid #555;
+            padding: 9px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            border-color: #f28c00;
+            color: #f28c00;
+        }
+
+        main {
+            max-width: 1100px;
+            margin: auto;
+            padding: 40px 20px;
+        }
+
+        .proyecto {
+            background: #1c1c1c;
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid #333;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea,
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #111;
+            color: white;
+            border: 1px solid #444;
+            border-radius: 6px;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .guardar {
+            margin-top: 25px;
+            background: #f28c00;
+            color: #111;
+            border: none;
+            font-weight: bold;
+        }
+
+        .guardar:hover {
+            background: #ff9d1c;
+            color: #111;
+        }
+
+        #mensaje {
+            margin-top: 20px;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>
+        SOLUCIONS <span>I</span> DISSENY
+    </h1>
+
+    <button id="logout">
+        Cerrar sesión
+    </button>
+
+</header>
+
+<main>
+
+    <div class="proyecto">
+    
+        <label for="selectorCliente">
+    Seleccionar cliente
+        </label>
+
+    <select id="selectorCliente">
+    <option value="">Cargando clientes...</option>
+    </select>
+
+        <label for="selectorReforma">
+    Seleccionar reforma
+        </label>
+
+    <select id="selectorReforma">
+    <option value="">Cargando reformas...</option>
+    </select>
+
+        <h2>Panel de administrador</h2>
+
+        <p>
+            Gestiona la información de la reforma.
+        </p>
+
+        <label for="nombreObra">
+            Nombre de la obra
+        </label>
+
+        <input
+            type="text"
+            id="nombreObra"
+        >
+
+        <label for="progreso">
+            Progreso (%)
+        </label>
+
+        <input
+            type="number"
+            id="progreso"
+            min="0"
+            max="100"
+        >
+
+        <label for="estado">
+            Estado de la reforma
+        </label>
+
+        <input
+            type="text"
+            id="estado"
+        >
+
+        <label for="mensajeTexto">
+            Mensaje
+        </label>
+
+        <textarea
+            id="mensajeTexto"
+        ></textarea>
+
+        <button
+            class="guardar"
+            id="guardar"
+        >
+            Guardar cambios
+        </button>
+
+    </div>
+
+    <div id="mensaje"></div>
+
+<hr style="margin: 30px 0; border-color: #333;">
+
+<h3>Fotos de la reforma</h3>
+
+<label for="fotos">
+    Seleccionar fotos
+</label>
+
+<input
+    type="file"
+    id="fotos"
+    accept="image/*"
+    multiple
+>
+
+<button
+    type="button"
+    class="guardar"
+    id="subirFotos"
+>
+    Subir fotos
+</button>
+
+<div id="mensajeFotos"></div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/supabase.js"></script>
+
+<script>
+
+async function subirFotos() {
+
+    const input = document.getElementById("fotos");
+    const mensajeFotos = document.getElementById("mensajeFotos");
+
+    const archivos = input.files;
+
+    if (!archivos.length) {
+        mensajeFotos.textContent = "Selecciona al menos una foto.";
+        return;
+    }
+
+    // Buscar la reforma actual
+    const {
+    data: reforma,
+    error: buscarError
+} = await supabaseClient
+    .from("reformas")
+    .select("id, user_id")
+    .limit(1)
+    .maybeSingle();
+
+    if (buscarError || !reforma) {
+    console.error(buscarError);
+        mensajeFotos.textContent =
+            "No se ha encontrado la reforma.";
+        return;
+    }
+
+    mensajeFotos.textContent = "Subiendo fotos...";
+
+    for (const archivo of archivos) {
+
+        const nombreArchivo =
+            Date.now() + "-" + archivo.name;
+
+        const ruta =
+            reforma.user_id + "/" + nombreArchivo;
+
+        const {
+            error: uploadError
+        } = await supabaseClient
+            .storage
+            .from("fotos-reformas")
+            .upload(ruta, archivo);
+
+        if (uploadError) {
+            console.error(uploadError);
+            mensajeFotos.textContent =
+                "Error al subir una de las fotos.";
+            return;
+        }
+    }
+
+    mensajeFotos.textContent =
+        "Fotos subidas correctamente.";
+
+    input.value = "";
+}
+async function comprobarAdministrador() {
+
+    const {
+        data: { user },
+        error
+    } = await supabaseClient.auth.getUser();
+
+    if (error || !user) {
+
+        window.location.href = "login.html";
+
+        return;
+    }
+
+    const rol = user.app_metadata?.role;
+
+    if (rol !== "admin") {
+
+        alert("No tienes permisos de administrador.");
+
+        window.location.href = "dashboard.html";
+
+        return;
+    }
+
+    cargarReforma();
+}
+
+async function cargarClientes() {
+    const selector = document.getElementById("selectorCliente");
+
+    const { data: clientes, error } = await supabaseClient
+        .from("clientes")
+        .select("id, email")
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Error al cargar clientes:", error);
+        selector.innerHTML = '<option value="">Error al cargar clientes</option>';
+        return;
+    }
+
+    selector.innerHTML = '<option value="">Seleccionar cliente...</option>';
+
+    clientes.forEach(cliente => {
+        const opcion = document.createElement("option");
+
+        opcion.value = cliente.id;
+        opcion.textContent = cliente.email;
+
+        selector.appendChild(opcion);
+    });
+}
+
+async function cargarReformas() {
+
+   
+    const selector = document.getElementById("selectorReforma");
+    const clienteId = document.getElementById("selectorCliente").value;
+
+    if (!clienteId) {
+        selector.innerHTML = '<option value="">Seleccionar reforma...</option>';
+        return;
+    }
+
+    const { data: reformas, error } = await supabaseClient
+        .from("reformas")
+        .select("id, nombre_obra")
+        .eq("user_id", clienteId)
+        .order("created_at", { ascending: true });
+
+    if (error) {
+        console.error("Error al cargar reformas:", error);
+        selector.innerHTML = '<option value="">Error al cargar reformas</option>';
+        return;
+    }
+
+    selector.innerHTML = '<option value="">Seleccionar reforma...</option>';
+
+    if (reformas.length === 0) {
+    selector.innerHTML = '<option value="">Este cliente no tiene ninguna reforma</option>';
+    return;
+}
+
+    reformas.forEach(reforma => {
+        const opcion = document.createElement("option");
+        opcion.value = reforma.id;
+        opcion.textContent = reforma.nombre_obra;
+        selector.appendChild(opcion);
+    });
+}
+    
+
+async function cargarReforma() {
+document.getElementById("mensaje").textContent = "";
+
+    const selector = document.getElementById("selectorReforma");
+    const reformaId = selector.value;
+
+    const {
+    data: reforma,
+    error
+} = await supabaseClient
+    .from("reformas")
+    .select("*")
+    .eq("id", reformaId)
+    .maybeSingle();
+
+    if (error) {
+
+        console.error(error);
+
+        
+        document.getElementById("mensaje").textContent =
+            "Error al cargar la reforma.";
+
+        return;
+    }
+
+    if (!reforma) {
+
+        document.getElementById("mensaje").textContent =
+            "No hay ninguna reforma creada.";
+
+        return;
+    }
+
+    document.getElementById("nombreObra").value =
+        reforma.nombre_obra || "";
+
+    document.getElementById("progreso").value =
+        reforma.progreso || 0;
+
+    document.getElementById("estado").value =
+        reforma.estado || "";
+
+    document.getElementById("mensajeTexto").value =
+        reforma.mensaje || "";
+
+}
+
+
+async function guardarCambios() {
+
+    const nombreObra =
+        document.getElementById("nombreObra").value;
+
+    const progreso =
+        document.getElementById("progreso").value;
+
+    const estado =
+        document.getElementById("estado").value;
+
+    const mensajeTexto =
+        document.getElementById("mensajeTexto").value;
+
+
+    const selector = document.getElementById("selectorReforma");
+    const reformaId = selector.value;
+
+    const selectorCliente = document.getElementById("selectorCliente");
+    const clienteId = selectorCliente.value;
+
+    let reforma = null;
+    let buscarError = null;
+
+    if (reformaId) {
+    const resultado = await supabaseClient
+        .from("reformas")
+        .select("id, user_id")
+        .eq("id", reformaId)
+        .maybeSingle();
+
+    reforma = resultado.data;
+    buscarError = resultado.error;
+}
+
+
+   if (buscarError) {
+    console.error("Error al buscar la reforma:", buscarError);
+    document.getElementById("mensaje").textContent =
+        "Ha ocurrido un error al buscar la reforma.";
+
+    return;
+}
+
+if (!reforma) {
+    const { data: nuevaReforma, error: crearError } =
+        await supabaseClient
+            .from("reformas")
+            .insert({
+                user_id: clienteId,
+                nombre_obra: nombreObra,
+                progreso: Number(progreso),
+                estado: estado,
+                mensaje: mensajeTexto
+            })
+            .select("id, user_id")
+            .single();
+
+    if (crearError) {
+        console.error("Error al crear la reforma:", crearError);
+        document.getElementById("mensaje").textContent =
+            "No se ha podido crear la reforma.";
+
+        return;
+    }
+
+    reforma = nuevaReforma;
+
+    selector.innerHTML +=
+        `<option value="${reforma.id}">${nombreObra}</option>`;
+
+    selector.value = reforma.id;
+}
+
+
+    const { error } = await supabaseClient
+    .from("reformas")
+    .update({
+        nombre_obra: nombreObra,
+        progreso: Number(progreso),
+        estado: estado,
+        mensaje: mensajeTexto
+    })
+     .eq("id", reforma.id);
+
+
+    if (error) {
+
+        console.error(error);
+
+        document.getElementById("mensaje").textContent =
+            "No se han podido guardar los cambios.";
+
+        return;
+    }
+
+        // Guardar una copia en el historial
+    const { data: historial, error: historialError } = await supabaseClient
+        .from("historial_reformas")
+        .insert({
+            reforma_id: reforma.id,
+            usuario_id: reforma.user_id,
+            nombre_obra: nombreObra,
+            progreso: Number(progreso),
+            estado: estado,
+            mensaje: mensajeTexto
+        })
+
+         .select("id")
+         .single();
+
+    if (historialError) {
+        console.error("Error guardando historial:", historialError);
+    
+         document.getElementById("mensaje").textContent =
+        "Error guardando historial: " + historialError.message;
+
+    return;
+}
+
+
+    document.getElementById("mensaje").textContent =
+        "Cambios guardados correctamente.";
+
+}
+
+
+async function cerrarSesion() {
+
+    await supabaseClient.auth.signOut();
+
+    window.location.href = "login.html";
+}
+
+
+document
+    .getElementById("guardar")
+    .addEventListener("click", guardarCambios);
+
+
+document
+    .getElementById("logout")
+    .addEventListener("click", cerrarSesion);
+
+
+    document
+    .getElementById("subirFotos")
+    .addEventListener("click", subirFotos);
+
+document
+    .getElementById("selectorReforma")
+    .addEventListener("change", cargarReforma);
+
+document
+    .getElementById("selectorCliente")
+    .addEventListener("change", async function () {
+
+        const clienteId = this.value;
+
+        const selectorReforma =
+            document.getElementById("selectorReforma");
+
+        if (!clienteId) {
+            selectorReforma.innerHTML =
+                '<option value="">Seleccionar reforma...</option>';
+
+            document.getElementById("nombreObra").value = "";
+            document.getElementById("progreso").value = 0;
+            document.getElementById("estado").value = "";
+            document.getElementById("mensajeTexto").value = "";
+
+            return;
+        }
+
+        await cargarReformas();
+
+        if (selectorReforma.options.length > 1) {
+            selectorReforma.selectedIndex = 1;
+            await cargarReforma();
+        } else {
+            document.getElementById("nombreObra").value = "";
+            document.getElementById("progreso").value = 0;
+            document.getElementById("estado").value = "";
+            document.getElementById("mensajeTexto").value = "";
+        }
+    });
+    
+(async function iniciar() {
+    await cargarClientes();
+    comprobarAdministrador();
+})();
+
+
+</script>
+
+</body>
+
+</html>
