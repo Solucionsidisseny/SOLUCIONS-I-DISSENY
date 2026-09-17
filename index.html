@@ -352,12 +352,13 @@
         /* CONTACTO */
         .contact-section {
             background: linear-gradient(rgba(0,0,0,.9), rgba(0,0,0,.95));
+            padding: 80px 0;
         }
 
         .contact-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 80px;
         }
 
         .contact-info h3 {
@@ -427,6 +428,7 @@
         .contact-form input,
         .contact-form textarea {
             width: 100%;
+            box-sizing: border-box;
             background: #191919;
             border: 1px solid #333;
             color: white;
@@ -847,7 +849,7 @@
 
 
 
-            <form id=contactform" action="https://formsubmit.co/solucionsidisseny140@gmail.com" method="POST">
+            <form id="contactform" class="contact-form" action="https://formsubmit.co/solucionsidisseny140@gmail.com" method="POST">
              
                 <input type="text" id="nombre" placeholder="Tu nombre" required>
              
