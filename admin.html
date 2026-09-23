@@ -244,20 +244,27 @@ async function subirFotos() {
         return;
     }
 
-    // Buscar la reforma actual
+       // Buscar la reforma seleccionada
+    const reformaId = document.getElementById("selectorReforma").value;
+
+    if (!reformaId) {
+        mensajeFotos.textContent = "Selecciona una reforma antes de subir fotos.";
+        return;
+    }
+
     const {
-    data: reforma,
-    error: buscarError
-} = await supabaseClient
-    .from("reformas")
-    .select("id, user_id")
-    .limit(1)
-    .maybeSingle();
+        data: reforma,
+        error: buscarError
+    } = await supabaseClient
+        .from("reformas")
+        .select("id, user_id")
+        .eq("id", reformaId)
+        .maybeSingle();
 
     if (buscarError || !reforma) {
-    console.error(buscarError);
+        console.error(buscarError);
         mensajeFotos.textContent =
-            "No se ha encontrado la reforma.";
+            "No se ha encontrado la reforma seleccionada.";
         return;
     }
 
