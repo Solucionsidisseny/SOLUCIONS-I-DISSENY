@@ -312,13 +312,13 @@ document
     .getElementById("logout")
     .addEventListener("click", cerrarSesion);
 
-    async function cargarFotos(userId) {
+async function cargarFotos(userId) {
 
     const contenedor = document.getElementById("fotosReforma");
 
     const { data: archivos, error } = await supabaseClient
         .storage
-        .from("fotos-reformas")
+        .from("fotos-clientes")
         .list(userId);
 
     if (error) {
@@ -334,16 +334,23 @@ document
 
     contenedor.innerHTML = "";
 
-    archivos.forEach(archivo => {
+    for (const archivo of archivos) {
 
-        const { data } = supabaseClient
+        const ruta = userId + "/" + archivo.name;
+
+        const { data, error: urlError } = await supabaseClient
             .storage
-            .from("fotos-reformas")
-            .getPublicUrl(userId + "/" + archivo.name);
+            .from("fotos-clientes")
+            .createSignedUrl(ruta, 3600);
+
+        if (urlError) {
+            console.error("Error al generar URL de la foto:", urlError);
+            continue;
+        }
 
         const imagen = document.createElement("img");
 
-        imagen.src = data.publicUrl;
+        imagen.src = data.signedUrl;
         imagen.style.width = "100%";
         imagen.style.maxWidth = "500px";
         imagen.style.marginBottom = "20px";
@@ -351,7 +358,7 @@ document
         imagen.style.display = "block";
 
         contenedor.appendChild(imagen);
-    });
+    }
 }
 
 async function cargarHistorial(usuarioId) {
