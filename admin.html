@@ -275,7 +275,7 @@ async function subirFotos() {
             error: uploadError
         } = await supabaseClient
             .storage
-            .from("fotos-reformas")
+            .from("fotos-clientes")
             .upload(ruta, archivo);
 
         if (uploadError) {
