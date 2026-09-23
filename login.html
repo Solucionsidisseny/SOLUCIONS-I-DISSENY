@@ -237,7 +237,7 @@ document.getElementById("olvidoPassword").addEventListener("click", async functi
     mensaje.textContent = "Enviando correo de recuperación...";
 
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-        redirectTo: "http://127.0.0.1:5500/cambiar-password.html"
+        redirectTo: "https://www.solucionsidisseny.com/cambiar-password.html"
     });
 
     if (error) {
